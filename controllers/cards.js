@@ -17,7 +17,7 @@ module.exports.createCard = (req, res) => {
       reqSuccess(res, card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         reqUnsuccess(res, ERROR_BAD_REQUEST, 'Переданы некорректные данные при создании карточки');
       } else {
         reqUnsuccess(res, ERROR_DEFAULT, `Ошибка: ${err.message}`);
@@ -41,7 +41,11 @@ module.exports.deleteCardId = (req, res) => {
       reqSuccess(res, { message: 'Card deleted' });
     })
     .catch((err) => {
-      if (err.name === 'CastError') reqUnsuccess(res, ERROR_BAD_REQUEST, 'Переданы некорректные данные в метод удаления карточки');
+      if (err.name === 'CastError') {
+        reqUnsuccess(res, ERROR_BAD_REQUEST, 'Переданы некорректные данные в метод удаления карточки');
+      } else {
+        reqUnsuccess(res, ERROR_DEFAULT, `Ошибка: ${err.message}`);
+      }
     });
 };
 

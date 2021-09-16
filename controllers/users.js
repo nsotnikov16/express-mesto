@@ -19,7 +19,7 @@ module.exports.createUser = (req, res) => {
   User.create({ name, about, avatar })
     .then((user) => reqSuccess(res, user))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         reqUnsuccess(res, ERROR_BAD_REQUEST, 'Переданы некорректные данные при создании пользователя');
       } else {
         reqUnsuccess(res, ERROR_DEFAULT, `Ошибка: ${err.message}`);
@@ -50,7 +50,6 @@ module.exports.updateProfile = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, {
     new: true,
     runValidators: true,
-    context: 'query',
   })
     .then((user) => {
       if (!user) {
@@ -60,7 +59,10 @@ module.exports.updateProfile = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      // Надеюсь, я правильно Вас понял, что тут CastError остается
+      // Заметил еще, что у меня валидация проходит только при методe create, в данном методе могу
+      // хоть какие данные внести, ошибки все равно нет, просто не обновляет
+      if ((err.name === 'CastError') || (err.name === 'ValidationError')) {
         reqUnsuccess(res, ERROR_BAD_REQUEST, 'Переданы некорректные данные при обновлении профиля');
       } else {
         reqUnsuccess(res, ERROR_DEFAULT, `Ошибка: ${err.message}`);
@@ -74,7 +76,6 @@ module.exports.updateAvatar = (req, res) => {
   User.findByIdAndUpdate(req.user._id, { avatar }, {
     new: true,
     runValidators: true,
-    context: 'query',
   })
     .then((user) => {
       if (!user) {
@@ -84,7 +85,7 @@ module.exports.updateAvatar = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if ((err.name === 'CastError') || (err.name === 'ValidationError')) {
         reqUnsuccess(res, ERROR_BAD_REQUEST, 'Переданы некорректные данные при обновлении аватара');
       } else {
         reqUnsuccess(res, ERROR_DEFAULT, `Ошибка: ${err.message}`);
