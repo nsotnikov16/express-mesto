@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const reqSuccess = require('../utils/successfulRequest');
 const reqUnsuccess = require('../utils/unsuccessfulRequest');
@@ -14,9 +16,14 @@ module.exports.getUsers = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => reqSuccess(res, user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -59,9 +66,6 @@ module.exports.updateProfile = (req, res) => {
       }
     })
     .catch((err) => {
-      // Надеюсь, я правильно Вас понял, что тут CastError остается
-      // Заметил еще, что у меня валидация проходит только при методe create, в данном методе могу
-      // хоть какие данные внести, ошибки все равно нет, просто не обновляет
       if ((err.name === 'CastError') || (err.name === 'ValidationError')) {
         reqUnsuccess(res, ERROR_BAD_REQUEST, 'Переданы некорректные данные при обновлении профиля');
       } else {
@@ -91,4 +95,22 @@ module.exports.updateAvatar = (req, res) => {
         reqUnsuccess(res, ERROR_DEFAULT, `Ошибка: ${err.message}`);
       }
     });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password).then((user) => {
+    const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+    res.send({ token });
+  })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
+};
+
+module.exports.getCurrentUser = (req, res) => {
+  User.findById(req.user._id).then((user) => {
+    reqSuccess(res, user);
+  });
 };

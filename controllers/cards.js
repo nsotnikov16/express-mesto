@@ -6,6 +6,7 @@ const {
   ERROR_BAD_REQUEST,
   ERROR_NOT_FOUND,
   ERROR_DEFAULT,
+  ERROR_FORBIDDEN,
 } = require('../utils/errors-code');
 
 module.exports.createCard = (req, res) => {
@@ -34,6 +35,11 @@ module.exports.getCards = (req, res) => {
 module.exports.deleteCardId = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((data) => {
+      if (req.user._id !== data.owner) {
+        reqUnsuccess(res, ERROR_FORBIDDEN, 'Доступ запрещен');
+        return;
+      }
+
       if (!data) {
         reqUnsuccess(res, ERROR_NOT_FOUND, 'Карточка с указанным _id не найдена');
         return;
