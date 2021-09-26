@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 const mongoose = require('mongoose');
 
 const cardSchema = new mongoose.Schema({
@@ -9,6 +10,12 @@ const cardSchema = new mongoose.Schema({
   },
   link: {
     type: String,
+    validate: {
+      validator(v) {
+        return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(v);
+      },
+      message: (props) => `${props.value} is not a valid phone number!`,
+    },
     required: true,
   },
   owner: {
@@ -17,7 +24,7 @@ const cardSchema = new mongoose.Schema({
     required: true,
   },
   likes: {
-    type: Array /* mongoose.Schema.Types.ObjectId */,
+    type: Array,
     default: [],
   },
   createdAt: {
