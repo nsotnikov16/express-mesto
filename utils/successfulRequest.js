@@ -1,7 +1,4 @@
-const { STATUS_OK } = require('./errors-code');
-
-const reqSuccess = (res, data) => {
-  res.status(STATUS_OK).send(data);
+module.exports = (res, data) => {
+  res.status(200).send(data);
 };
-
-module.exports = reqSuccess;
+// этот файл нужно оставить для отправки сообщения после успешного запроса

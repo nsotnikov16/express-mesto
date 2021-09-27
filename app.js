@@ -2,8 +2,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { errors } = require('celebrate');
 const mongoose = require('mongoose');
+const { Joi, celebrate } = require('celebrate');
+const validUrl = require('./utils/validUrl');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const validEmail = require('./utils/validEmail');
 
 const { PORT = 3000 } = process.env;
 
@@ -14,13 +17,29 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().custom(validEmail),
+    password: Joi.string().required().custom(validUrl),
+  }),
+}), login);
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().custom(validEmail),
+    password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().custom(validUrl),
+  }),
+}), createUser);
 
 app.use(auth);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
+
+app.use('*', (req, res) => res.status(404).send({ message: 'Страница не найдена' }));
 
 app.use(errors());
 

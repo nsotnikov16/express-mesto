@@ -1,6 +1,5 @@
 /* eslint-disable no-useless-escape */
 const mongoose = require('mongoose');
-const { isEmail } = require('validator');
 const bcrypt = require('bcryptjs');
 const UnauthorizedError = require('../utils/classesErrors/UnauthorizedError');
 
@@ -9,10 +8,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    validate: {
-      validator: (value) => isEmail(value),
-      message: 'Неверный формат электронного адреса!',
-    },
   },
   password: {
     type: String,
@@ -33,12 +28,6 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    validate: {
-      validator(v) {
-        return /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/.test(v);
-      },
-      message: (props) => `${props.value} is not a valid phone number!`,
-    },
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
 });

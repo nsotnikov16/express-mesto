@@ -51,7 +51,7 @@ module.exports.likeCard = (req, res, next) => Card.findByIdAndUpdate(
   { new: true },
 ).then((data) => {
   if (!data) {
-    throw new NotFoundError('Карточка с указанным _id не найдена');
+    next(new NotFoundError('Карточка с указанным _id не найдена'));
   }
   return reqSuccess(res, { message: 'Like card' });
 })

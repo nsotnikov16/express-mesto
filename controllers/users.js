@@ -2,19 +2,15 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const reqSuccess = require('../utils/successfulRequest');
-const reqUnsuccess = require('../utils/unsuccessfulRequest');
 const ConflictError = require('../utils/classesErrors/ConflictError');
 const NotFoundError = require('../utils/classesErrors/NotFoundError');
 const UnauthorizedError = require('../utils/classesErrors/UnauthorizedError');
 const BadRequestError = require('../utils/classesErrors/BadRequestError');
-const {
-  ERROR_DEFAULT,
-} = require('../utils/errors-code');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => reqSuccess(res, users))
-    .catch((err) => reqUnsuccess(res, ERROR_DEFAULT, `Ошибка: ${err.message}`));
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -43,7 +39,7 @@ module.exports.getUserId = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Пользователь по указанному _id не найден.');
+        next(new NotFoundError('Пользователь по указанному _id не найден.'));
       }
       return reqSuccess(res, user);
     })
