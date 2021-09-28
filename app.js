@@ -6,7 +6,7 @@ const { Joi, celebrate } = require('celebrate');
 const validUrl = require('./utils/validUrl');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const validEmail = require('./utils/validEmail');
+const NotFoundError = require('./utils/classesErrors/NotFoundError');
 
 const { PORT = 3000 } = process.env;
 
@@ -19,14 +19,14 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().custom(validEmail),
-    password: Joi.string().required().custom(validUrl),
+    email: Joi.string().required().email(),
+    password: Joi.string().required(), // перепутал
   }),
 }), login);
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().custom(validEmail),
+    email: Joi.string().required().email(),
     password: Joi.string().required(),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
@@ -39,7 +39,7 @@ app.use(auth);
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
-app.use('*', (req, res) => res.status(404).send({ message: 'Страница не найдена' }));
+app.use('*', () => { throw new NotFoundError('Страница не найдена'); });
 
 app.use(errors());
 
