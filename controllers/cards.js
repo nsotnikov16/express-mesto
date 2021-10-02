@@ -32,7 +32,7 @@ module.exports.deleteCardId = (req, res, next) => {
       if (!data) {
         next(new NotFoundError('Карточка с указанным _id не найдена'));
       }
-      if (req.user._id !== data.owner) {
+      if (req.user._id !== String(data.owner)) {
         next(new ForbiddenError('Доступ запрещен'));
       }
       reqSuccess(res, { message: 'Card deleted' });
